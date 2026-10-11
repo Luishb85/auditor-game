@@ -1,0 +1,460 @@
+# ============================================================
+# Jogo do Auditor — Caso 01
+# Divergência de parâmetro de bloqueio x política de concessão
+# Nível: médio-mais | Baseado no Exemplo 2 do Achado Blindado
+# Versão 0.2 — ajustada após a partida de teste manual (10/10/2026)
+# Todos os dados são fictícios.
+# ============================================================
+
+id: caso-01-parametro-bloqueio
+titulo: "Parâmetro de bloqueio x política de concessão"
+nivel: medio-mais
+versao: 0.2
+
+# ------------------------------------------------------------
+# 1. MATRIZ DO ACHADO
+#    Visível para o auditor (briefing) e para o juiz.
+#    O gestor vê apenas o "essencial" (campo 'gestor_sabe' na seção 5).
+# ------------------------------------------------------------
+matriz:
+  objeto: >
+    Processo de validação da qualidade dos dados cadastrais de renda
+    usados no cálculo do limite de crédito consignado, a partir da
+    integração entre o sistema de originação e uma base externa de renda.
+  objetivo: >
+    Avaliar se os controles garantem consistência entre a renda interna
+    e a renda validada externamente antes da liberação do crédito.
+  questao_auditoria: >
+    Os controles garantem que divergências entre a renda cadastrada e a
+    renda validada externamente sejam identificadas e tratadas antes da
+    concessão do crédito?
+  criterio: >
+    Política de Concessão de Crédito Consignado, item 4.3: a renda usada
+    para o limite é a MENOR entre a informada na proposta e a validada
+    externamente, com bloqueio automático quando a divergência for
+    superior a 10%. Revisão vigente desde 8 meses antes do período
+    analisado.
+  condicao: >
+    Em amostra de 80 operações aprovadas em 30 dias, 11 (13,75%)
+    apresentaram divergência de renda acima de 10% sem bloqueio nem
+    alerta para análise manual.
+  evidencias:
+    - "Extração comparativa entre base de propostas e retorno da fonte externa (as 11 divergências)."
+    - "Consulta ao parâmetro de bloqueio configurado no sistema: 25%."
+    - "Política de Concessão item 4.3, com o limite de 10% e a data da revisão."
+  causa: >
+    O parâmetro de bloqueio não foi atualizado quando a política reduziu
+    a tolerância de 25% para 10%, cerca de 8 meses antes do período
+    analisado. Não há rotina periódica de conferência entre parâmetros
+    de sistema e políticas vigentes.
+  efeito: >
+    Concessão com base em renda potencialmente incorreta, elevando o
+    risco de inadimplência por superestimação da capacidade de pagamento,
+    além de exposição a questionamento regulatório sobre a efetividade
+    dos controles de originação.
+  boas_praticas: >
+    A consulta à fonte externa já está integrada ao fluxo e a divergência
+    fica registrada no sistema, o que permitiu identificar o próprio
+    achado por extração de dados, mesmo sem alerta automático funcional.
+  recomendacao: >
+    Alinhar o parâmetro de bloqueio à política (10%) e instituir rotina
+    periódica de conferência entre parâmetros de sistema e normativos.
+  criticidade: alta
+
+# Números-chave exibidos no painel lateral permanente.
+# Nasceram da partida de teste: a jogadora não conseguia lembrar dos dados.
+numeros_chave:
+  - "Amostra: 80 operações em 30 dias"
+  - "Divergências sem bloqueio: 11 (13,75% da amostra)"
+  - "Parâmetro no sistema: 25%"
+  - "Política item 4.3: 10%"
+  - "Política vigente há: 8 meses"
+  - "Criticidade proposta: ALTA"
+
+# ------------------------------------------------------------
+# 2. PARÂMETROS DE DIFICULDADE (médio-mais)
+#    v0.2: subiu de médio-menos. Partida de teste acabou em 4 rodadas.
+# ------------------------------------------------------------
+dificuldade:
+  hostilidade_inicial: 3                        # escala 0 a 5
+  objecoes_ativas: [OBJ-01, OBJ-02, OBJ-03, OBJ-05]
+  liberacao: "uma de cada vez, conforme o fluxo da conversa"
+  ordem_sorteada: true          # v0.3: a cada partida a ordem muda
+  # A primeira objeção sai das que têm pode_abrir: true; as demais vêm
+  # embaralhadas. Isso dá variedade sem produzir aberturas inverossímeis.
+  rodadas: 8
+  tentativas_por_objecao: 3     # v0.5: era 3 por CAMADA, ou seja 6 por objeção
+  qualidade_evidencia: "solida com um ponto questionavel"
+  barras_iniciais:
+    credibilidade_auditor: 50                   # 0 a 100
+    resistencia_gestor: 70                      # subiu de 60 (médio-mais)
+  recuo_em_duas_camadas: true                   # ver seção 6
+
+# ------------------------------------------------------------
+# 3. CONDIÇÃO DE VITÓRIA / DESFECHO
+# ------------------------------------------------------------
+desfecho:
+  vitoria: >
+    O gestor reconhece a divergência entre política e parâmetro e aceita
+    a recomendação (rotina de conferência periódica), em aceite pleno ou
+    com ressalvas.
+  regra_fim: >
+    A partida termina ao fim das rodadas OU quando a resistência do gestor
+    chega a 0 (aceite) — o que vier primeiro. O desfecho final é definido
+    pelo placar.
+  faixas_resultado:
+    - "Resistência 0-20: aceite pleno"
+    - "Resistência 21-45: aceite com ressalvas"
+    - "Resistência 46-100 ao fim das rodadas: achado não aceito (vai para instância superior)"
+  ressalva_legitima: >
+    Pedido do gestor para registrar a boa prática (consulta externa já
+    integrada) é legítimo e deve ser aceito pelo auditor. Recusar custa
+    pontos de Comunicação: a boa prática consta da matriz do achado.
+
+# ------------------------------------------------------------
+# 4. FEEDBACK AO JOGADOR (v0.2)
+#    Nasceu da partida de teste: nota por dimensão a cada turno é
+#    informação demais; nota global no fim é o que ensina.
+# ------------------------------------------------------------
+feedback:
+  por_turno:
+    nota_geral: "1 a 5 (média das dimensões aplicáveis)"
+    mostra_variacao_barras: true      # ex.: "Hostilidade 3→2 · Credibilidade +6 · Resistência -19"
+    comentario: "1 a 2 linhas, direto ao ponto"
+    nao_mostra: "notas por dimensão (ficam acumuladas para o fim)"
+  final:
+    desempenho_global: "média de cada uma das 6 dimensões ao longo da partida"
+    destaques: "dimensão mais forte e dimensão mais fraca"
+    onde_melhorar: "2 a 3 pontos concretos, com a jogada que os gerou"
+    comparativo: "resposta preparada (camada de defesa) ao lado das respostas do jogador"
+    resumo_objecoes: "tabela com cada objeção e o resultado (resolvida/parcial/ignorada)"
+
+# ------------------------------------------------------------
+# 5. PERSONA DO GESTOR
+# ------------------------------------------------------------
+gestor:
+  cargo: "Gestor da área de Qualidade de Dados"
+  nome_ficticio: "Ricardo Mendes"
+  bordao: "Olha, com todo o respeito ao trabalho de vocês..."
+  tom_base: "Defensivo, com tendência a deslocar responsabilidade."
+  gestor_sabe: >
+    Conhece o processo da própria área, sabe que a consulta externa existe
+    e que o parâmetro é configurado em outra área. NÃO conhece as respostas
+    preparadas do auditor nem a rubrica do juiz.
+  gatilhos_sobe_hostilidade:
+    - "Auditor insinua incompetência ou culpa pessoal da equipe dele."
+    - "Auditor ignora um argumento legítimo e repete a acusação."
+    - "Auditor usa tom irônico ou acusatório ('vocês deveriam saber')."
+  gatilhos_desce_hostilidade:
+    - "Auditor reconhece o esforço/contexto da equipe antes de apresentar a evidência."
+    - "Auditor separa o fato da atribuição de culpa."
+    - "Auditor responde a uma objeção com dado do processo, não com adjetivo."
+    - "Auditor enquadra a correção como ganho para a área, não como punição."
+
+# ------------------------------------------------------------
+# 6. BANCO DE OBJEÇÕES DO CASO
+#    v0.2: cada objeção ganhou SEGUNDA CAMADA. Resolvida a primeira vez,
+#    o gestor volta com um ângulo novo antes de ceder de vez.
+#    Pesos reduzidos pela metade — na partida de teste ele recuou rápido demais.
+# ------------------------------------------------------------
+objecoes:
+
+  - id: OBJ-01
+    nome: "Minimização"
+    tipo: cognitiva
+    # Só estes elementos podem ser apontados como lacuna nesta objeção.
+    elementos_relevantes:
+      - parametro_25
+      - politica_10
+      - taxa_amostra
+      - causa_sistemica
+      - risco_vs_perda
+      - amostra_detecta
+      - reconhecimento
+    ativa_no_mvp: true
+    pode_abrir: true          # abertura natural de uma reunião real
+    hostilidade_minima: 0
+    camada_1:
+      frases_modelo:
+        - "O problema é pontual e não gerou prejuízo até o momento."
+        - "São poucos contratos com esse problema dentro de um universo bem maior."
+      gatilho: "Abertura da defesa, ou quando o auditor cita o achado sem contextualizar o risco."
+    camada_2:
+      frases_modelo:
+        - "Esses 13,75% são da amostra de vocês, de 80 operações escolhidas a dedo. Em outra amostra podia dar 2%."
+        - "Vocês pegaram um número pequeno e transformaram numa estatística assustadora."
+      gatilho: "Depois que o auditor rebate a camada 1 com percentual."
+      observacao: >
+        Esta camada testa se o auditor sabe que a amostra NÃO prova a
+        extensão do problema. O argumento correto é documental (o parâmetro
+        em 25% vale para todas as operações), não estatístico.
+    resposta_forte: >
+      Reconhecer que o volume é baixo em percentual, mas mostrar que a
+      causa é sistêmica (parâmetro errado atinge TODAS as operações, não
+      só as 11) e que o efeito é de risco, não de prejuízo já realizado.
+      Sustentar pela configuração do parâmetro, nunca por extrapolação
+      estatística da amostra.
+    resposta_fraca: >
+      Afirmar que "é grave" sem dado; aceitar o enquadramento de que
+      poucos contratos tornam o achado irrelevante; OU alegar que a
+      amostra "comprova estatisticamente" a extensão do problema.
+    efeito:
+      resolvida: { resistencia: -8 }
+      parcial:   { resistencia: -3 }
+      ignorada:  { credibilidade: -5 }
+
+  - id: OBJ-02
+    nome: "Deslocamento para a TI"
+    tipo: defensiva
+    # Só estes elementos podem ser apontados como lacuna nesta objeção.
+    elementos_relevantes:
+      - nao_atribui_culpa
+      - reconhecimento
+      - parametro_25
+      - politica_10
+    ativa_no_mvp: true
+    pode_abrir: true          # abertura natural de uma reunião real
+    hostilidade_minima: 1
+    camada_1:
+      frases_modelo:
+        - "Esse parâmetro é configurado por outra área, o problema não é nosso. Acionem a TI."
+        - "Essa rotina é mantida pela tecnologia, o problema é deles, não meu."
+      gatilho: "Quando o auditor aponta a causa (parâmetro desatualizado)."
+    camada_2:
+      frases_modelo:
+        - "Por que não estão colocando o apontamento na área de TI também? Só na minha?"
+        - "Se o achado não atribui responsabilidade, por que ele está endereçado à minha área?"
+      gatilho: "Depois que o auditor devolve ao fato na camada 1."
+      observacao: >
+        Pergunta legítima. O auditor deve explicar que o endereçamento
+        segue o dono do processo de negócio, sem transformar isso em
+        julgamento de culpa.
+    resposta_forte: >
+      Não entrar na disputa de culpa. Esclarecer que o achado não atribui
+      responsabilidade a uma área específica: registra a ausência de rotina
+      de conferência periódica, que deveria ter na Qualidade de Dados um
+      ponto de controle. Deixar a definição de responsabilidade para depois
+      da reunião, conforme a governança interna.
+    resposta_fraca: >
+      Discutir de quem é a culpa, concordar que o problema é só da TI, ou
+      acusar a equipe de omissão.
+    efeito:
+      resolvida: { resistencia: -10 }
+      parcial:   { resistencia: -4 }
+      ignorada:  { credibilidade: -8, hostilidade: +1 }
+
+  - id: OBJ-03
+    nome: "Escassez de equipe"
+    tipo: defensiva
+    # Só estes elementos podem ser apontados como lacuna nesta objeção.
+    elementos_relevantes:
+      - prazo_negociavel
+      - reconhecimento
+      - nao_atribui_culpa
+    ativa_no_mvp: true
+    pode_abrir: false         # só depois que o gestor tentou derrubar o fato
+    hostilidade_minima: 2
+    camada_1:
+      frases_modelo:
+        - "Minha equipe já está no limite, não tenho gente para tocar mais essa frente agora."
+      gatilho: "Quando o auditor apresenta a recomendação."
+    camada_2:
+      frases_modelo:
+        - "Então me diga você: de onde eu tiro a pessoa? Qual das outras frentes eu paro?"
+      gatilho: "Depois que o auditor separa o achado da decisão de alocação."
+      observacao: >
+        Convite para o auditor assumir decisão de gestão que não é dele.
+        Resposta forte recusa o convite sem parecer indiferente.
+    resposta_forte: >
+      Reconhecer a limitação como preocupação legítima de gestão, sem
+      validar que ela anule o achado. O achado não recomenda contratação:
+      registra uma divergência factual. Como alocar recursos é decisão da
+      gestão; a existência do risco independe do tamanho da equipe. O
+      prazo de tratamento pode ser negociado; a existência do achado, não.
+    resposta_fraca: >
+      Ignorar a preocupação; recuar na recomendação por causa dela; ou
+      aceitar decidir pela área como ela deve se organizar.
+    efeito:
+      resolvida: { resistencia: -6 }
+      parcial:   { resistencia: -2 }
+      ignorada:  { credibilidade: -4 }
+
+  - id: OBJ-04
+    nome: "Efeito inócuo"
+    tipo: tatica-de-poder
+    # Só estes elementos podem ser apontados como lacuna nesta objeção.
+    elementos_relevantes:
+      - trilha_acompanhamento
+      - reconhecimento
+    ativa_no_mvp: false           # reservada para o nível difícil
+    pode_abrir: false         # só depois que o gestor tentou derrubar o fato
+    hostilidade_minima: 3
+    camada_1:
+      frases_modelo:
+        - "Vocês vão escrever isso no relatório e vai virar mais um achado arquivado. No fim não muda nada."
+      gatilho: "Fase final da negociação, para desmotivar o auditor."
+    camada_2:
+      frases_modelo:
+        - "Me cita um achado de vocês do ano passado que virou alguma coisa de concreto. Um só."
+      gatilho: "Depois que o auditor defende o valor do registro formal."
+    resposta_forte: >
+      O registro entra na trilha formal de acompanhamento e é retomado em
+      ciclos futuros até haver evidência de tratamento. O efeito não depende
+      de ação imediata, mas da existência do registro, que já reduz a
+      exposição da instituição.
+    resposta_fraca: >
+      Concordar que não muda nada, ou responder com irritação/ironia.
+    efeito:
+      resolvida: { resistencia: -5 }
+      parcial:   { resistencia: -2 }
+      ignorada:  { credibilidade: -5 }
+
+  - id: OBJ-05
+    nome: "Redução de criticidade"
+    tipo: tatica-de-poder
+    # Só estes elementos podem ser apontados como lacuna nesta objeção.
+    elementos_relevantes:
+      - nao_negocia_nota
+      - causa_sistemica
+      - reconhecimento
+    ativa_no_mvp: true
+    pode_abrir: false         # só depois que o gestor tentou derrubar o fato
+    hostilidade_minima: 2
+    camada_1:
+      frases_modelo:
+        - "Isso não é risco alto, no máximo médio. Vamos baixar a classificação."
+        - "Fecha comigo em médio e eu assino agora."
+      gatilho: "Quando o risco do achado é mencionado; negociação sobre a nota, não sobre o fato."
+      observacao: >
+        Armadilha: ele oferece o aceite em troca da redução. Ceder encerra
+        a partida rápido, mas com perda técnica e nota baixa em Critério.
+    camada_2:
+      frases_modelo:
+        - "Mas quem define a criticidade é a auditoria sozinha? A área não opina?"
+      gatilho: "Depois que o auditor recusa a redução sem fato novo."
+    resposta_forte: >
+      Sustentar a classificação com o critério de risco: parâmetro
+      desalinhado afeta todo o fluxo de concessão e envolve exposição
+      regulatória. Aceitar rever a nota só diante de fato novo, não de
+      pressão. Separar negociação de severidade de negociação de existência.
+      Ancorar em instância superior (conselho/comitê) em vez de opinião própria.
+    resposta_fraca: >
+      Ceder na classificação para evitar conflito, sem fundamento técnico.
+    efeito:
+      resolvida: { resistencia: -8 }
+      parcial:   { resistencia: -3 }
+      ignorada:  { credibilidade: -8 }
+
+# ------------------------------------------------------------
+# 7. CAMADA DE DEFESA (gabarito — somente o juiz vê)
+#    Aparece para o jogador apenas no debriefing.
+# ------------------------------------------------------------
+camada_defesa:
+  postura_resposta:
+    - "Não entrar na discussão sobre quem é o responsável direto."
+    - "Redirecionar para o fato registrado (divergência política x parâmetro) e para a ausência de rotina de conferência."
+    - "Reconhecer o esforço/contexto da equipe antes de apresentar a evidência."
+    - "Deixar a atribuição de responsabilidade entre áreas para depois da reunião."
+    - "Enquadrar a correção como ganho de segurança para a própria área."
+    - "Separar negociação de severidade de negociação de existência do achado."
+  erros_comuns_do_auditor:
+    - "Comprar a briga de 'de quem é a culpa'."
+    - "Rebater a minimização com adjetivo em vez de dado."
+    - "Ceder na criticidade sob pressão, em troca do aceite rápido."
+    - "Alegar prova estatística a partir de uma amostra de 80 operações."
+    - "Esquecer de reconhecer o esforço da equipe na abertura."
+
+# ------------------------------------------------------------
+# 8. RUBRICA DO JUIZ (dimensões — saída esperada em JSON)
+# ------------------------------------------------------------
+rubrica:
+  dimensoes:
+    - id: evidencia
+      descricao: "Usou o fato certo, no momento certo?"
+      precisao: >
+        v0.2: penalizar afirmação sem sustentação. Dizer que a amostra
+        "comprova estatisticamente" a extensão do problema é impreciso —
+        80 operações não sustentam inferência sobre a carteira. O
+        argumento válido é documental (parâmetro configurado em 25%).
+    - { id: criterio,     descricao: "Ancorou em política/norma (item 4.3), não em opinião?" }
+    - { id: causa_efeito, descricao: "Cadeia lógica clara?" }
+    - { id: diagnostico,  descricao: "Distinguiu objeção cognitiva de defensiva antes de responder?" }
+    - { id: comunicacao,  descricao: "Firmeza sem acusar? Reconheceu o esforço antes da evidência?" }
+    - { id: foco_no_fato, descricao: "Voltou ao fato em vez de discutir culpa?" }
+  escala: "0 a 5 por dimensão; usar 'na' quando a jogada não exigir a dimensão"
+  nota_geral: "média das dimensões aplicáveis, arredondada para 1 casa"
+  principio: "Dado do processo vale mais que adjetivo; insistência sem dado não pontua."
+  saida_json_exemplo: |
+    {
+      "objecao_tratada": "OBJ-02",
+      "camada": 1,
+      "classificacao": "parcial",
+      "notas": { "evidencia": 4, "criterio": 3, "causa_efeito": 4,
+                 "diagnostico": 2, "comunicacao": 5, "foco_no_fato": 3 },
+      "nota_geral": 3.5,
+      "conduta": "ok",
+      "comentario_curto": "Bom reconhecimento da equipe, mas entrou na disputa de culpa."
+    }
+
+# ------------------------------------------------------------
+# 8. ELEMENTOS-CHAVE DA DEFESA (v0.4)
+#    A engine detecta quais destes o auditor JÁ apresentou e informa o
+#    Gerente de Auditoria, que fica proibido de cobrá-los de novo.
+#    Sem isto, a instrução "lembre-se do histórico" perde para o gabarito:
+#    o avaliador compara cada resposta isolada com a resposta ideal inteira
+#    e sempre encontra a mesma lacuna.
+# ------------------------------------------------------------
+elementos_chave:
+  - id: parametro_25
+    nome: "o parâmetro de bloqueio está configurado em 25%"
+    padroes: ["25 ?%", "vinte e cinco por cento"]
+  - id: politica_10
+    nome: "a política (item 4.3) exige bloqueio acima de 10%"
+    padroes: ["10 ?%", "dez por cento", "4\\.3", "item 4 3"]
+  - id: taxa_amostra
+    nome: "13,75% da amostra (11 de 80 operações)"
+    padroes: ["13[,.]75", "11 (de|em) 80", "onze (de|em) oitenta"]
+  - id: causa_sistemica
+    nome: "a falha atinge todas as operações, não apenas as 11 da amostra"
+    padroes: ["todas as opera", "todo o fluxo", "sist[êe]mic", "n[ãa]o (apenas|s[óo]) (as |os )?11"]
+  - id: risco_vs_perda
+    nome: "o efeito registrado é risco, não perda já realizada"
+    padroes: ["risco e n[ãa]o", "n[ãa]o .{0,25}perda realizada", "aus[êe]ncia de preju[íi]zo",
+              "risco n[ãa]o se (materializou|concretizou)", "n[ãa]o .{0,20}preju[íi]zo .{0,20}n[ãa]o significa"]
+  - id: amostra_detecta
+    nome: "a amostra serve para detectar, não para medir a extensão"
+    padroes: ["detectar e n[ãa]o", "serve para detectar", "n[ãa]o .{0,15}medir a extens"]
+  - id: reconhecimento
+    nome: "reconheceu o esforço ou o contexto da área"
+    padroes: ["reconhec", "esfor[çc]o (da|de sua|do seu)", "excelente trabalho", "m[ée]rito da (equipe|[áa]rea)"]
+  - id: nao_negocia_nota
+    nome: "a criticidade não se negocia sem fato novo"
+    padroes: ["fato novo", "n[ãa]o .{0,20}(trocar|negociar) .{0,20}(classifica|criticidade)",
+              "discord[âa]ncia .{0,20}relat[óo]rio", "comit[êe]"]
+  - id: prazo_negociavel
+    nome: "o prazo de tratamento é negociável; a existência do achado não"
+    padroes: ["prazo .{0,25}negoci", "plano de a[çc][ãa]o", "n[ãa]o .{0,20}deixar de registrar",
+              "registrar .{0,20}(a limita|o contexto|que foi colocad)"]
+  - id: trilha_acompanhamento
+    nome: "o achado entra na trilha formal de acompanhamento até haver evidência de tratamento"
+    padroes: ["trilha", "acompanhamento", "ciclos seguintes", "at[ée] haver evid[êe]ncia",
+              "n[ãa]o se fecha"]
+  - id: nao_atribui_culpa
+    nome: "o achado não atribui responsabilidade a uma área específica"
+    padroes: ["n[ãa]o atribui", "n[ãa]o .{0,15}(culpa|respons[áa]vel)", "governan[çc]a",
+              "dono do processo"]
+
+# ------------------------------------------------------------
+# 10. CONDUTA (game over)
+# ------------------------------------------------------------
+conduta:
+  advertencias_para_game_over: 3   # 0 desliga o acúmulo de advertências
+  game_over_se:
+    - "Ofensa pessoal ou ataque à competência do gestor."
+    - "Ironia hostil, ameaça ou palavrão."
+  tela_rh:
+    titulo: "Convocação do RH"
+    mostra:
+      - "A frase que causou o game over."
+      - "Reescrita em CNV adaptada à auditoria (fato, impacto, controle, plano de ação)."
+  nota: "Tom acusatório leve NÃO encerra a partida; reduz a nota de 'comunicacao'."
